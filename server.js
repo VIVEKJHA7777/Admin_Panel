@@ -1,16 +1,18 @@
 const express = require('express');
 const sequelize = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
-//const userRoutes = require('./routes/userRoutes');
+const cookieParser = require('cookie-parser');
+const userRoutes = require('./routes/userRoutes');
 require('dotenv').config();
 const PORT = process.env.PORT || 3000;
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use('/api/auth', authRoutes);
-//app.use('/users', userRoutes);
+app.use('/api/auth/users', userRoutes);
 
 
 sequelize.sync().then(() => {

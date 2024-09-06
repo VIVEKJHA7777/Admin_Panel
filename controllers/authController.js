@@ -98,3 +98,16 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+//logout controller.........
+
+exports.logout = async(req, res) => {
+  try{
+      res.cookie("token","",{maxAge:0});
+      res.status(200).json({message:"Logged out successfully"});
+  }
+  catch(err){
+    console.log("error in logout controller ",err.message);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
