@@ -78,14 +78,15 @@ exports.loginUser = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    // Retrieve all users and their roles
+    // Retrieve all users and their roles, automatically filtering out soft-deleted users
     const users = await User.findAll({
       include: [{
         model: Role,
-        as: 'role', // Alias if specified in your model
+        as: 'role', // Alias used in the model association
         attributes: ['name'], // Include role name
       }],
       attributes: ['id', 'username', 'email'], // Specify the fields you want to retrieve
+      // No need for `where: { deletedAt: null }` because `paranoid: true` automatically filters out soft-deleted records
     });
 
     res.status(200).json({ users });
@@ -94,6 +95,7 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 // getUserById................................
 exports.getUserById = async (req, res) => {
@@ -104,6 +106,7 @@ exports.getUserById = async (req, res) => {
     const user = await User.findByPk(id, {
       include: [{
         model: Role,
+        as: 'role', // Alias if specified in your model
         attributes: ['name'], // Include the role name
       }],
       attributes: ['id', 'username', 'email'], // Specify the user fields to retrieve
@@ -117,14 +120,13 @@ exports.getUserById = async (req, res) => {
       id: user.id,
       username: user.username,
       email: user.email,
-      role: user.Role ? user.Role.name : null, // Include the role name
+      role: user.role ? user.role.name : null, // Include the role name
     });
   } catch (err) {
     console.error("Error in getUserById controller: ", err.message);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
-
 
 // updateUserById...............................................
 
@@ -184,6 +186,84 @@ exports.updateUser = async (req, res) => {
     });
   } catch (err) {
     console.error("Error in updateUser controller: ", err.message);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+//softDelete..............................................
+
+exports.softDeleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the user by ID
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Perform soft delete
+    await user.destroy(); // This will set the `deletedAt` timestamp
+
+    // Since Sequelize handles soft deletion, the `deletedAt` should be updated.
+    res.status(200).json({
+      message: 'User soft deleted successfully',
+      deletedAt: user.deletedAt // Use the deletedAt from the current user instance
+    });
+  } catch (err) {
+    console.error("Error in softDeleteUser controller: ", err.message);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+
+//Permanent delete...........................................................
+
+exports.permanentDeleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the user by ID
+    const user = await User.findByPk(id, { paranoid: false }); // Fetch even soft-deleted users
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Permanently delete the user from the database
+    await user.destroy({ force: true });
+
+    res.status(200).json({ message: 'User permanently deleted successfully' });
+  } catch (err) {
+    console.error("Error in permanentDeleteUser controller: ", err.message);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+//restore user...........................................................
+
+exports.restoreUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the user by ID, including soft-deleted users
+    const user = await User.findByPk(id, { paranoid: false });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if the user is actually soft-deleted
+    if (!user.deletedAt) {
+      return res.status(400).json({ message: 'User is not deleted' });
+    }
+
+    // Restore the user by removing the `deletedAt` timestamp
+    await user.restore();
+
+    res.status(200).json({ message: 'User restored successfully' });
+  } catch (err) {
+    console.error("Error in restoreUser controller: ", err.message);
     res.status(500).json({ message: 'Internal server error' });
   }
 };

@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerUser, loginUser, getAllUsers,getUserById,updateUser } = require('../controllers/userController');
+const { registerUser, loginUser, getAllUsers,getUserById,updateUser,softDeleteUser,permanentDeleteUser,restoreUser } = require('../controllers/userController');
 const { isAdmin, isManager } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -36,6 +36,15 @@ router.get('/getUser/:id', getUserById);
 
 //updateUser..............
 router.put('/updateUser/:id', isAdmin, updateUser);
+
+// Soft delete user
+router.delete('/soft/:id', isAdmin, softDeleteUser);
+
+// Permanent delete user........................
+router.delete('/permanent/:id', isAdmin, permanentDeleteUser);
+
+// Restore user..............................
+router.patch('/restore/:id', isAdmin, restoreUser);
 
 
 
