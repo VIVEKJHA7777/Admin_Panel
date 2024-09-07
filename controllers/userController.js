@@ -82,6 +82,7 @@ exports.getAllUsers = async (req, res) => {
     const users = await User.findAll({
       include: [{
         model: Role,
+        as: 'role', // Alias if specified in your model
         attributes: ['name'], // Include role name
       }],
       attributes: ['id', 'username', 'email'], // Specify the fields you want to retrieve
