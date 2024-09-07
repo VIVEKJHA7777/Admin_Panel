@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Role = require('../models/Role');
 const jwt = require('jsonwebtoken');
+const { Op } = require('sequelize');
 
 // Register User (Only Admin)
 exports.registerUser = async (req, res) => {
@@ -17,7 +18,12 @@ exports.registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create a new user
-    const role= await Role.create({ name: roleName });
+    //const role= await Role.create({ name: roleName });
+
+    let role = await Role.findOne({ where: { name: roleName } });
+    if (!role) {
+      role = await Role.create({ name: roleName }); // Create the role if it doesn't exist
+    }
         
     const newUser = await User.create({
       username,
@@ -264,6 +270,39 @@ exports.restoreUser = async (req, res) => {
     res.status(200).json({ message: 'User restored successfully' });
   } catch (err) {
     console.error("Error in restoreUser controller: ", err.message);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+//Assign Role to users...................................................
+exports.assignRoleToUser = async (req, res) => {
+  try {
+    const { id } = req.params; // User ID from the route parameter
+    const { roleName } = req.body; // Role name from the request body
+
+    // Find the user by ID
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Find the role by name, or create it if it doesn't exist
+    let role = await Role.findOne({ where: { name: roleName } });
+    if (!role) {
+      role = await Role.create({ name: roleName }); // Create the role if it doesn't exist
+    }
+
+    // Assign the role to the user by updating the RoleId field
+    user.RoleId = role.id;
+    await user.save();
+
+    res.status(200).json({
+      message: 'Role assigned to user successfully',
+      user,
+      role
+    });
+  } catch (err) {
+    console.error("Error in assignRoleToUser controller:", err.message);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
