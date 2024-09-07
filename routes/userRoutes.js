@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerUser, loginUser, getAllUsers,getUserById,updateUser,softDeleteUser,permanentDeleteUser,restoreUser,assignRoleToUser } = require('../controllers/userController');
+const { registerUser, loginUser, getAllUsers,getUserById,updateUser,softDeleteUser,permanentDeleteUser,restoreUser,assignRoleToUser,revokeRoleFromUser } = require('../controllers/userController');
 const { isAdmin, isManager } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -48,6 +48,9 @@ router.patch('/restore/:id', isAdmin, restoreUser);
 
 // Assign role to user
 router.post('/:id/assign-role', isAdmin, assignRoleToUser);
+
+//Revoke role from user
+router.post('/:id/revoke-role', isAdmin, revokeRoleFromUser);
 
 
 module.exports = router;

@@ -306,3 +306,35 @@ exports.assignRoleToUser = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+//Revoke role from user......................................................
+
+exports.revokeRoleFromUser = async (req, res) => {
+  try {
+    const { id } = req.params; // User ID from the route parameter
+
+    // Find the user by ID
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if the user has a role assigned
+    if (!user.RoleId) {
+      return res.status(400).json({ message: 'User has no role assigned' });
+    }
+
+    // Set RoleId to null to revoke the role
+    user.RoleId = null;
+    await user.save();
+
+    res.status(200).json({
+      message: 'Role revoked from user successfully',
+      user
+    });
+  } catch (err) {
+    console.error("Error in revokeRoleFromUser controller:", err.message);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+

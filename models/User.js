@@ -18,7 +18,7 @@ const User = sequelize.define('User', {
   },
   RoleId: { // Foreign key for role association
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true ,
     references: {
       model: Role, // Reference the Role model
       key: 'id'    // Reference the 'id' field in Role model
