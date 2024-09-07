@@ -123,3 +123,66 @@ exports.getUserById = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+
+// updateUserById...............................................
+
+exports.updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, email, password, roleName } = req.body;
+
+    // Find the user by ID
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Find the current role of the user based on RoleId
+    const currentRole = await Role.findByPk(user.RoleId);
+    if (!currentRole) {
+      return res.status(400).json({ message: 'Current role not found' });
+    }
+
+    // If a new roleName is provided, check if it's different from the current role
+    if (roleName && roleName !== currentRole.name) {
+      // Check if the new role exists
+      let newRole = await Role.findOne({ where: { name: roleName } });
+
+      // If the role doesn't exist, create it
+      if (!newRole) {
+        newRole = await Role.create({ name: roleName });
+      }
+
+      // Update the RoleId foreign key to the new role
+      user.RoleId = newRole.id;
+    }
+
+    // Update user fields if they exist in the request body
+    if (username) user.username = username;
+    if (email) user.email = email;
+
+    // If password is provided, hash the new password
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
+    }
+
+    // Save the updated user
+    await user.save();
+
+    // Return the updated user details
+    res.status(200).json({
+      message: 'User updated successfully',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: roleName || currentRole.name // Return updated or current role
+      }
+    });
+  } catch (err) {
+    console.error("Error in updateUser controller: ", err.message);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

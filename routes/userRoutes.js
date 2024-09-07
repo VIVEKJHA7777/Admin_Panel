@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerUser, loginUser, getAllUsers,getUserById } = require('../controllers/userController');
+const { registerUser, loginUser, getAllUsers,getUserById,updateUser } = require('../controllers/userController');
 const { isAdmin, isManager } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -33,6 +33,9 @@ router.get('/getAllUsers', (req, res, next) => {
 //getUserById..............
 
 router.get('/getUser/:id', getUserById);
+
+//updateUser..............
+router.put('/updateUser/:id', isAdmin, updateUser);
 
 
 
