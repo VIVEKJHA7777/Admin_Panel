@@ -1,7 +1,8 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
-const Role = require('./Role');
+const Role = require('./Role'); // Import Role model
 
+// Define the User model
 const User = sequelize.define('User', {
   username: {
     type: DataTypes.STRING,
@@ -16,24 +17,27 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  RoleId: { // Foreign key for role association
+  RoleId: {
     type: DataTypes.INTEGER,
-    allowNull: true ,
+    allowNull: true,
     references: {
-      model: Role, // Reference the Role model
-      key: 'id'    // Reference the 'id' field in Role model
+      model: Role,
+      key: 'id'
     }
   }
 }, {
-  paranoid: true, // Enables soft delete (sets "deletedAt" timestamp instead of deleting the row)
-  timestamps: true, // Keeps track of "createdAt" and "updatedAt" timestamps
-  deletedAt: 'deletedAt' // The name of the field that will store the deletion timestamp
+  paranoid: true,
+  timestamps: true,
+  deletedAt: 'deletedAt'
 });
 
-// Define associations
-User.belongsTo(Role, {
-  foreignKey: 'RoleId',
-  as: 'role'
-});
+//module.exports = User;
+
+
+// Association with Role
+User.belongsTo(Role, { foreignKey: 'RoleId', as: 'role' });
+
+// One-to-Many relationship: A User can have many Projects
+//User.hasMany(require('./Project'), { foreignKey: 'UserId', as: 'projects' });
 
 module.exports = User;
