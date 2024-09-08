@@ -28,3 +28,6 @@ const Project = sequelize.define('Project', {
 });
 
 module.exports = Project;
+
+//getAll project ......................................
+

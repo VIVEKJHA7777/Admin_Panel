@@ -16,7 +16,7 @@ require('./models/associations');
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/auth/users', userRoutes);
-app.use('/api/project', projectRoutes);
+app.use('/api/projects', projectRoutes);
 
 
 
