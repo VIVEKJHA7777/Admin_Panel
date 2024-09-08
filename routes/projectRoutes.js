@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createProject,getProjects,getProjectById,updateProject } = require('../controllers/projectController');
+const { createProject,getProjects,getProjectById,updateProject,softdeleteProject,restoreProject,permanentDeleteProject } = require('../controllers/projectController');
 const { isAdmin } = require('../middleware/authMiddleware');
 
 // POST /project - Create a new project and assign to Managers (Accessible only by Admins)
@@ -13,6 +13,15 @@ router.get('/getAllproject', isAdmin, getProjects);
 router.get('/getproject/:id', isAdmin, getProjectById);
 
 // Update the details of a project
-router.put('/updateProject/:id', isAdmin, updateProject)
+router.put('/updateProject/:id', isAdmin, updateProject);
+
+// Soft delete a project
+router.delete('/softdelete/:id', isAdmin, softdeleteProject);
+
+// Route to restore a soft-deleted project
+router.patch('/restore/:id', isAdmin, restoreProject);
+
+// Route to permanently delete a project
+router.delete('/permanent/:id', isAdmin, permanentDeleteProject);
 
 module.exports = router;

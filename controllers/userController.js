@@ -3,6 +3,8 @@ const User = require('../models/User');
 const Role = require('../models/Role');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
+const { logAudit } = require('./logController');
+
 
 // Register User (Only Admin)
 exports.registerUser = async (req, res) => {
@@ -31,6 +33,8 @@ exports.registerUser = async (req, res) => {
       password: hashedPassword,
       RoleId: role.id || null
     });
+
+    await logAudit('User Created', "Admin", `Admin ID: ${req.user.id}`);
 
     res.status(201).json({ message: 'User registered successfully', user: newUser });
   } catch (err) {

@@ -1,5 +1,7 @@
 const Project = require('../models/Project');
 const User = require('../models/User');
+const { logAudit } = require('./logController');
+
 //const Role = require('../models/Role');
 
 // POST /project - Create a new project and assign to a specific manager
@@ -115,5 +117,81 @@ exports.updateProject = async (req, res) => {
     res.status(500).json({ message: 'Error updating project', error });
   }
 };
+
+// DELETE /project/:id - Soft delete a project
+exports.softdeleteProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the project by ID
+    const project = await Project.findOne({ where: { id } });
+
+    // Check if the project exists
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Soft delete the project
+    await project.destroy();
+
+    res.status(200).json({ message: 'Project soft deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error deleting project', error });
+  }
+};
+
+// controllers/projectController.js
+exports.restoreProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the project by ID, including soft-deleted ones
+    const project = await Project.findOne({
+      where: { id },
+      paranoid: false // Allow querying soft-deleted projects
+    });
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Restore the project
+    await project.restore();
+
+    res.status(200).json({ message: 'Project restored successfully', project });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error restoring project', error });
+  }
+};
+
+// controllers/projectController.js
+exports.permanentDeleteProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the project by ID, including soft-deleted ones
+    const project = await Project.findOne({
+      where: { id },
+      paranoid: false // Allow querying soft-deleted projects
+    });
+
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Permanently delete the project
+    await project.destroy({ force: true });
+
+    res.status(200).json({ message: 'Project permanently deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error permanently deleting project', error });
+  }
+};
+
+
+
 
 

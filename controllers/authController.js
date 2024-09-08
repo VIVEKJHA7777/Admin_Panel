@@ -2,6 +2,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Role = require('../models/Role');
+const { logAudit } = require('./logController');
+
+
 
 // Admin Signup
 exports.signup = async (req, res) => {
@@ -35,6 +38,10 @@ exports.signup = async (req, res) => {
       password: hashedPassword,
       RoleId: adminRole.id, // Associate with "Admin" role using correct column name
     });
+
+    await logAudit('Admin Created', "Admin");
+
+
 
     // Generate JWT
     const token = jwt.sign(
