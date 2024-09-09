@@ -1,5 +1,3 @@
-// utils/auditLogger.js
-
 const AuditLog = require('../models/AuditLog');
 
 async function logAudit(action, performedBy, targetResource) {
@@ -14,7 +12,6 @@ async function logAudit(action, performedBy, targetResource) {
   }
 }
 
-// Controller to get all audit logs
 const getAuditLogs = async (req, res) => {
   try {
     const auditLogs = await AuditLog.findAll();
@@ -27,4 +24,3 @@ const getAuditLogs = async (req, res) => {
 };
 
 module.exports = { logAudit,getAuditLogs };;
-

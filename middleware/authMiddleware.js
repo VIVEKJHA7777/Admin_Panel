@@ -1,8 +1,7 @@
 const jwt = require('jsonwebtoken');
 
-// Middleware to check if the user is admin
 const isAdmin = (req, res, next) => {
-  const token = req.cookies.token; // Get token from cookies
+  const token = req.cookies.token; 
 
   if (!token) {
     return res.status(403).json({ message: 'No token provided, access denied' });
@@ -15,17 +14,16 @@ const isAdmin = (req, res, next) => {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    req.user = decoded; // Add user data to request object
-    next(); // Move to the next middleware or route handler
+    req.user = decoded; 
+    next(); 
   } catch (err) {
     return res.status(401).json({ message: 'Invalid token' });
   }
 };
 
-//ismanager..........................
 const isManager = (req, res, next) => {
-  const token = req.cookies.token; // Get token from cookies
-  
+  const token = req.cookies.token; 
+
   if (!token) {
     return res.status(403).json({ message: 'No token provided, access denied' });
   }
@@ -36,8 +34,8 @@ const isManager = (req, res, next) => {
     if (decoded.role !== 'Manager') {
       return res.status(403).json({ message: 'Unauthorized' });
     }
-    req.user = decoded; // Add user data to request object
-    next(); // Move to the next middleware or route handler
+    req.user = decoded; 
+    next(); 
   } catch (err) {
     return res.status(401).json({ message: 'Invalid token' });
   }

@@ -2,21 +2,16 @@ const Project = require('../models/Project');
 const User = require('../models/User');
 const { logAudit } = require('./logController');
 
-//const Role = require('../models/Role');
-
-// POST /project - Create a new project and assign to a specific manager
 exports.createProject = async (req, res) => {
   try {
     const { name, description, managerId } = req.body;
 
-    // Find the manager by ID
     const manager = await User.findOne({ where: { id: managerId } });
 
-    // Create a new project and associate it with the manager
     const project = await Project.create({
       name,
       description,
-      UserId: managerId, // Assign to the manager
+      UserId: managerId, 
     });
 
     res.status(201).json({ message: 'Project created successfully', project });
@@ -26,18 +21,15 @@ exports.createProject = async (req, res) => {
   }
 };
 
-//get all projects................................
-
-// GET /project - Get a list of all projects and their assigned manager
 exports.getProjects = async (req, res) => {
   try {
-    // Retrieve all projects with their assigned manager
+
     const projects = await Project.findAll({
       include: [
         {
-          model: User, // Join with User model (manager)
-          as: 'user', // Use alias 'user' for manager
-          attributes: ['id', 'username', 'email'], // Get only the necessary fields
+          model: User, 
+          as: 'user', 
+          attributes: ['id', 'username', 'email'], 
         }
       ]
     });
@@ -49,25 +41,21 @@ exports.getProjects = async (req, res) => {
   }
 };
 
-
-// GET /project/:id - Get details of a specific project by ID
 exports.getProjectById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Retrieve the project by ID along with the assigned manager
     const project = await Project.findOne({
       where: { id },
       include: [
         {
-          model: User, // Join with User model (manager)
-          as: 'user', // Use alias 'user' for manager
-          attributes: ['id', 'username', 'email'], // Get only the necessary fields
+          model: User, 
+          as: 'user', 
+          attributes: ['id', 'username', 'email'], 
         }
       ]
     });
 
-    // Check if project exists
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
@@ -79,24 +67,17 @@ exports.getProjectById = async (req, res) => {
   }
 };
 
-// PUT /project/:id - Update the details of a project
 exports.updateProject = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description, managerId } = req.body;
 
-    // Find the project by ID
     const project = await Project.findOne({ where: { id } });
 
-    // Check if project exists
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    // Optionally, check if the user making the request is an admin
-    // For simplicity, assuming req.user.role === 'admin' indicates an admin user
-
-    // If managerId is provided, check if the manager exists
     if (managerId) {
       const manager = await User.findOne({ where: { id: managerId } });
       if (!manager) {
@@ -104,11 +85,10 @@ exports.updateProject = async (req, res) => {
       }
     }
 
-    // Update the project details
     await project.update({
       name,
       description,
-      UserId: managerId // Update manager if provided
+      UserId: managerId 
     });
 
     res.status(200).json({ message: 'Project updated successfully', project });
@@ -118,20 +98,16 @@ exports.updateProject = async (req, res) => {
   }
 };
 
-// DELETE /project/:id - Soft delete a project
 exports.softdeleteProject = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Find the project by ID
     const project = await Project.findOne({ where: { id } });
 
-    // Check if the project exists
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    // Soft delete the project
     await project.destroy();
 
     res.status(200).json({ message: 'Project soft deleted successfully' });
@@ -141,22 +117,19 @@ exports.softdeleteProject = async (req, res) => {
   }
 };
 
-// controllers/projectController.js
 exports.restoreProject = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Find the project by ID, including soft-deleted ones
     const project = await Project.findOne({
       where: { id },
-      paranoid: false // Allow querying soft-deleted projects
+      paranoid: false 
     });
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    // Restore the project
     await project.restore();
 
     res.status(200).json({ message: 'Project restored successfully', project });
@@ -166,22 +139,19 @@ exports.restoreProject = async (req, res) => {
   }
 };
 
-// controllers/projectController.js
 exports.permanentDeleteProject = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Find the project by ID, including soft-deleted ones
     const project = await Project.findOne({
       where: { id },
-      paranoid: false // Allow querying soft-deleted projects
+      paranoid: false 
     });
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
 
-    // Permanently delete the project
     await project.destroy({ force: true });
 
     res.status(200).json({ message: 'Project permanently deleted successfully' });
@@ -190,8 +160,3 @@ exports.permanentDeleteProject = async (req, res) => {
     res.status(500).json({ message: 'Error permanently deleting project', error });
   }
 };
-
-
-
-
-

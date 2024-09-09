@@ -4,48 +4,37 @@ const User = require('../models/User');
 const Role = require('../models/Role');
 const { logAudit } = require('./logController');
 
-
-
-// Admin Signup
 exports.signup = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // Check if the "Admin" role exists
     let adminRole = await Role.findOne({ where: { name: 'Admin' } });
 
-    // If the "Admin" role doesn't exist, create it
     if (!adminRole) {
       adminRole = await Role.create({ name: 'Admin' });
     }
 
-    // Check if an Admin user already exists
     const existingAdmin = await User.findOne({
-      where: { RoleId: adminRole.id }, // Match the correct foreign key name
+      where: { RoleId: adminRole.id }, 
     });
 
     if (existingAdmin) {
       return res.status(400).json({ message: 'Admin user already exists' });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create Admin user
     const newAdmin = await User.create({
       username,
       email,
       password: hashedPassword,
-      RoleId: adminRole.id, // Associate with "Admin" role using correct column name
+      RoleId: adminRole.id, 
     });
 
     await logAudit('Admin Created', "Admin");
 
-
-
-    // Generate JWT
     const token = jwt.sign(
-      { id: newAdmin.id, role: 'Admin' }, // Embed role in the token
+      { id: newAdmin.id, role: 'Admin' }, 
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -63,31 +52,26 @@ exports.signup = async (req, res) => {
   }
 };
 
-// Admin Login
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if user exists
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Check if user is an Admin
-    const role = await Role.findByPk(user.RoleId); // Use correct foreign key name
+    const role = await Role.findByPk(user.RoleId); 
     if (role.name !== 'Admin') {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    // Compare password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Generate JWT
     const token = jwt.sign(
       { id: user.id, role: 'Admin' },
       process.env.JWT_SECRET,
@@ -105,8 +89,6 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
-
-//logout controller.........
 
 exports.logout = async(req, res) => {
   try{
